@@ -94,4 +94,121 @@ private:
     std::hash<T> hasher;
 };
 
+template<class T>
+class FineGrainedSet {
+public:
+    FineGrainedSet() {
+        head = new NodeWithMutex<T>(0, nullptr);
+        head->hash = std::numeric_limits<size_t>::min();
+
+        head->next = new NodeWithMutex<T>(0, nullptr);
+        head->next->hash = std::numeric_limits<size_t>::max();
+    }
+
+    ~FineGrainedSet() {
+        delete head;
+    }
+
+    bool add(T value) {
+		bool res = false;
+
+		head->mtx.lock();
+
+		NodeWithMutex<T>* prev = head;
+		NodeWithMutex<T>* curr = prev->next;
+
+		curr->mtx.lock();
+
+		while(curr->hash < hasher(value)) {
+			prev->mtx.unlock();
+			prev = curr;
+			curr = curr->next;
+			curr->mtx.lock();
+		}
+
+		if(curr->hash == hasher(value)) {
+			res = false;
+		} else {
+			NodeWithMutex<T>* node = new NodeWithMutex<T>(value, nullptr);
+			node->next = curr;
+			prev->next = node;
+			res = true;
+		}
+
+		curr->mtx.unlock();
+		prev->mtx.unlock();
+
+		return res;
+    }
+
+    bool remove(T value) {
+		bool res = false;
+
+		NodeWithMutex<T>* prev = nullptr;
+		NodeWithMutex<T>* curr = nullptr;
+
+		head->mtx.lock();
+		prev = head;
+		curr = prev->next;
+		curr->mtx.lock();
+
+		while(curr->hash < hasher(value)) {
+			prev->mtx.unlock();
+			prev = curr;
+			curr = curr->next;
+			curr->mtx.lock();
+		}
+
+		if(curr->hash == hasher(value)) {
+			prev->next = curr->next;
+
+			curr->mtx.unlock();
+			curr->next = nullptr;
+            delete curr;
+
+			res = true;
+		} else {
+			curr->mtx.unlock();
+			res = false;
+		}
+		prev->mtx.unlock();
+		return res;
+    }
+
+    bool contains(T value) {
+        bool res = false;
+
+        NodeWithMutex<T>* prev = nullptr;
+        NodeWithMutex<T>* curr = nullptr;
+
+        head->mtx.lock();
+        prev = head;
+        curr = prev->next;
+        curr->mtx.lock();
+
+        while(curr->hash < value) {
+            prev->mtx.unlock();
+            prev = curr;
+            curr = curr->next;
+            curr->mtx.lock();
+        }
+
+        if(curr->hash == hasher(value)) {
+            res = true;
+        } else {
+            res = false;
+        }
+
+        curr->mtx.unlock();
+        prev->mtx.unlock();
+
+        return res;
+    }
+
+private:
+    NodeWithMutex<T>* head = nullptr;
+    std::mutex mtx;
+    std::hash<T> hasher;
+};
+
 #endif // LISTS_H

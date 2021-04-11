@@ -211,4 +211,135 @@ private:
     std::hash<T> hasher;
 };
 
+template<class T>
+class OptimisticSet {
+public:
+    OptimisticSet() {
+        head = new NodeWithMutex<T>(0, nullptr);
+        head->hash = std::numeric_limits<size_t>::min();
+
+        head->next = new NodeWithMutex<T>(0, nullptr);
+        head->next->hash = std::numeric_limits<size_t>::max();
+    }
+
+    ~OptimisticSet() {
+        //delete head;
+    }
+
+    bool add(T value) {
+		bool res = false;
+
+		while(true) {
+			NodeWithMutex<T>* prev = head;
+			NodeWithMutex<T>* curr = prev->next;
+			while(curr->hash < hasher(value)) {
+				prev = curr;
+				curr = curr->next;
+			}
+			prev->mtx.lock();
+			curr->mtx.lock();
+
+			if(validate(prev, curr)) {
+				if(curr->hash == hasher(value)) {
+					res = false;
+				} else {
+					NodeWithMutex<T>* node = new NodeWithMutex<T>(value, nullptr);
+                    node->next = curr;
+					prev->next = node;
+
+					res = true;
+				}
+
+				prev->mtx.unlock();
+				curr->mtx.unlock();
+
+				return res;
+			}
+			prev->mtx.unlock();
+			curr->mtx.unlock();
+		}
+    }
+
+    bool remove(T value) {
+		bool res = false;
+
+		while(1) {
+			NodeWithMutex<T>* prev = head;
+			NodeWithMutex<T>* curr = prev->next;
+
+			while(curr->hash < hasher(value)) {
+				prev = curr;
+				curr = curr->next;
+			}
+
+			prev->mtx.lock();
+			curr->mtx.lock();
+
+			if(validate(prev, curr)) {
+				if(curr->hash == hasher(value)) {
+					prev->next = curr->next;
+					res = true;
+
+					curr->mtx.unlock();
+                    curr->next = nullptr;
+                    delete curr;
+
+				} else {
+					curr->mtx.unlock();
+					res = false;
+				}
+                prev->mtx.unlock();
+
+				return res;
+			}
+
+			prev->mtx.unlock();
+			curr->mtx.unlock();
+		}
+    }
+
+    bool contains(T value) {
+		while(1) {
+			NodeWithMutex<T>* prev = head;
+			NodeWithMutex<T>* curr = prev->next;
+
+			while(curr->hash < hasher(value)) {
+				prev = curr;
+				curr = curr->next;
+			}
+
+			prev->mtx.lock();
+			curr->mtx.lock();
+
+			if(validate(prev, curr)) {
+				bool res = (curr->hash == hasher(value));
+
+				prev->mtx.unlock();
+				curr->mtx.unlock();
+
+				return res;
+			}
+			prev->mtx.unlock();
+			curr->mtx.unlock();
+		}
+    }
+
+private:
+    bool validate(NodeWithMutex<T>* prev, NodeWithMutex<T>* curr) {
+		NodeWithMutex<T>* node = head;
+		while(node->hash <= prev->hash) {
+			if(node == prev) {
+				return (prev->next == curr);
+			}
+			node = node->next;
+		}
+		return false;
+    }
+
+private:
+    NodeWithMutex<T>* head = nullptr;
+    std::mutex mtx;
+    std::hash<T> hasher;
+};
+
 #endif // LISTS_H

@@ -62,6 +62,7 @@ int main() {
 
         display_elapsed_time<CoarseGrainedSet<int>>("CoarseGrainedSet", number_of_tests, iters_per_test, threads_num);
         display_elapsed_time<FineGrainedSet<int>>("FineGrainedSet", number_of_tests, iters_per_test, threads_num);
+        display_elapsed_time<OptimisticSet<int>>("OptimisticSet", number_of_tests, iters_per_test, threads_num);
 
         std::cout << "===\n";
     }

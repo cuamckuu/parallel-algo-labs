@@ -20,9 +20,16 @@ std::vector<std::chrono::milliseconds> run_tests(size_t number_of_tests, size_t 
             threads[thread_i] = std::async(std::launch::async, [&]() {
                 for (size_t itter = 0; itter < iters_per_thread; ++itter) {
                     set.contains(rand() % 2000);
+                    set.contains(rand() % 2000);
+                    set.contains(rand() % 2000);
                     set.add(rand() % 2000);
                     set.contains(rand() % 2000);
+                    set.contains(rand() % 2000);
+                    set.contains(rand() % 2000);
                     set.remove(rand() % 2000);
+                    set.contains(rand() % 2000);
+                    set.contains(rand() % 2000);
+                    set.contains(rand() % 2000);
                     set.contains(rand() % 2000);
                 }
             });
@@ -55,8 +62,8 @@ void display_elapsed_time(std::string name, size_t number_of_tests, size_t iters
 
 int main() {
     for (size_t threads_num = 1; threads_num <= std::thread::hardware_concurrency(); ++threads_num) {
-        const size_t number_of_tests = 5;
-        const size_t iters_per_test = 10000;
+        const size_t number_of_tests = 3;
+        const size_t iters_per_test = 15000;
 
         std::cout << threads_num << " threads (ops per thread: " << iters_per_test / threads_num << ")\n";
 

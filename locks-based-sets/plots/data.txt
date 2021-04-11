@@ -1,0 +1,20 @@
+1 threads (ops per thread: 15000)
+CoarseGrainedSet  595.667
+FineGrainedSet  8249.667
+OptimisticSet  977.667
+===
+2 threads (ops per thread: 7500)
+CoarseGrainedSet  1448.000
+FineGrainedSet  4815.667
+OptimisticSet  502.333
+===
+3 threads (ops per thread: 5000)
+CoarseGrainedSet  1499.000
+FineGrainedSet  3077.000
+OptimisticSet  324.667
+===
+4 threads (ops per thread: 3750)
+CoarseGrainedSet  1524.333
+FineGrainedSet  2262.000
+OptimisticSet  253.667
+===

@@ -1,20 +1,24 @@
-1 threads (ops per thread: 15000)
-CoarseGrainedSet  595.667
-FineGrainedSet  8249.667
-OptimisticSet  977.667
+1 threads (ops per thread: 55000)
+CoarseGrainedSet  590.000
+FineGrainedSet  11050.000
+OptimisticSetWithMemLeak  1110.000
+FairOptimisticSet  15579.000
 ===
-2 threads (ops per thread: 7500)
-CoarseGrainedSet  1448.000
-FineGrainedSet  4815.667
-OptimisticSet  502.333
+2 threads (ops per thread: 27500)
+CoarseGrainedSet  4115.000
+FineGrainedSet  7191.000
+OptimisticSetWithMemLeak  704.000
+FairOptimisticSet  9551.000
 ===
-3 threads (ops per thread: 5000)
-CoarseGrainedSet  1499.000
-FineGrainedSet  3077.000
-OptimisticSet  324.667
+3 threads (ops per thread: 18333)
+CoarseGrainedSet  4145.000
+FineGrainedSet  5148.000
+OptimisticSetWithMemLeak  473.000
+FairOptimisticSet  6823.000
 ===
-4 threads (ops per thread: 3750)
-CoarseGrainedSet  1524.333
-FineGrainedSet  2262.000
-OptimisticSet  253.667
+4 threads (ops per thread: 13750)
+CoarseGrainedSet  4299.000
+FineGrainedSet  5218.000
+OptimisticSetWithMemLeak  381.000
+FairOptimisticSet  5359.000
 ===

@@ -1,0 +1,20 @@
+1 threads (ops per thread: 1000000)
+TestAndSetLock  181.200
+TestAndTestAndSetLock  185.400
+ExpBackoffLock  188.600
+===
+2 threads (ops per thread: 500000)
+TestAndSetLock  828.400
+TestAndTestAndSetLock  669.000
+ExpBackoffLock  233.200
+===
+3 threads (ops per thread: 333333)
+TestAndSetLock  1341.400
+TestAndTestAndSetLock  880.600
+ExpBackoffLock  279.400
+===
+4 threads (ops per thread: 250000)
+TestAndSetLock  1692.600
+TestAndTestAndSetLock  981.800
+ExpBackoffLock  302.600
+===

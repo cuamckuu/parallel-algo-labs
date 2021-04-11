@@ -223,7 +223,7 @@ public:
     }
 
     ~OptimisticSet() {
-        //delete head;
+        delete head;
     }
 
     bool add(T value) {
@@ -314,6 +314,109 @@ private:
 
 private:
     NodeWithMutex<T>* head = nullptr;
+    std::mutex mtx;
+    std::hash<T> hasher;
+};
+
+template<class T>
+class FairOptimisticSet {
+public:
+    FairOptimisticSet() {
+        head = std::make_shared<SmartNodeWithMutex<T>>(0, nullptr);
+        head->hash = std::numeric_limits<size_t>::min();
+
+        head->next = std::make_shared<SmartNodeWithMutex<T>>(0, nullptr);
+        head->next->hash = std::numeric_limits<size_t>::max();
+    }
+
+    bool add(T value) {
+        while(true) {
+            std::shared_ptr<SmartNodeWithMutex<T>> prev = head;
+            std::shared_ptr<SmartNodeWithMutex<T>> curr = prev->next;
+            while(curr->hash < hasher(value)) {
+                prev = curr;
+                curr = curr->next;
+            }
+
+            std::lock_guard<std::mutex> guard_prev(prev->mtx);
+            std::lock_guard<std::mutex> guard_curr(curr->mtx);
+
+            if(validate(prev, curr)) {
+                if(curr->hash == hasher(value)) {
+                    return false;
+                }
+
+                std::shared_ptr<SmartNodeWithMutex<T>> node = std::make_shared<SmartNodeWithMutex<T>>(value, nullptr);
+                node->next = curr;
+                prev->next = node;
+
+                return true;
+            }
+        }
+    }
+
+    bool remove(T value) {
+        while(true) {
+            std::shared_ptr<SmartNodeWithMutex<T>> prev = head;
+            std::shared_ptr<SmartNodeWithMutex<T>> curr = prev->next;
+
+            while(curr->hash < hasher(value)) {
+                prev = curr;
+                curr = curr->next;
+            }
+
+            std::lock_guard<std::mutex> guard_prev(prev->mtx);
+            std::lock_guard<std::mutex> guard_curr(curr->mtx);
+
+            if(validate(prev, curr)) {
+                if(curr->hash != hasher(value)) {
+                    return false;
+                }
+
+                prev->next = curr->next;
+
+                // FIXME: Memory leak now, but crash if uncomment. WTF?
+                //curr->next = nullptr;
+                //delete curr;
+
+                return true;
+            }
+        }
+    }
+
+    bool contains(T value) {
+        while(true) {
+            std::shared_ptr<SmartNodeWithMutex<T>> prev = head;
+            std::shared_ptr<SmartNodeWithMutex<T>> curr = prev->next;
+
+            while(curr->hash < hasher(value)) {
+                prev = curr;
+                curr = curr->next;
+            }
+
+            std::lock_guard<std::mutex> guard_prev(prev->mtx);
+            std::lock_guard<std::mutex> guard_curr(curr->mtx);
+
+            if(validate(prev, curr)) {
+                return (curr->hash == hasher(value));
+            }
+        }
+    }
+
+private:
+    bool validate(std::shared_ptr<SmartNodeWithMutex<T>> prev, std::shared_ptr<SmartNodeWithMutex<T>> curr) {
+        std::shared_ptr<SmartNodeWithMutex<T>> node = head;
+        while(node->hash <= prev->hash) {
+            if(node == prev) {
+                return (prev->next == curr);
+            }
+            node = node->next;
+        }
+        return false;
+    }
+
+private:
+    std::shared_ptr<SmartNodeWithMutex<T>> head = nullptr;
     std::mutex mtx;
     std::hash<T> hasher;
 };

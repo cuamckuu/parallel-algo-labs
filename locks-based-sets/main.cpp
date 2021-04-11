@@ -19,18 +19,14 @@ std::vector<std::chrono::milliseconds> run_tests(size_t number_of_tests, size_t 
         for (size_t thread_i = 0; thread_i < threads_num; ++thread_i) {
             threads[thread_i] = std::async(std::launch::async, [&]() {
                 for (size_t itter = 0; itter < iters_per_thread; ++itter) {
-                    set.contains(rand() % 2000);
-                    set.contains(rand() % 2000);
-                    set.contains(rand() % 2000);
-                    set.add(rand() % 2000);
-                    set.contains(rand() % 2000);
-                    set.contains(rand() % 2000);
-                    set.contains(rand() % 2000);
-                    set.remove(rand() % 2000);
-                    set.contains(rand() % 2000);
-                    set.contains(rand() % 2000);
-                    set.contains(rand() % 2000);
-                    set.contains(rand() % 2000);
+                    set.contains(rand() % 1000);
+                    set.contains(rand() % 1000);
+                    set.contains(rand() % 1000);
+                    set.add(rand()      % 1000);
+                    set.contains(rand() % 1000);
+                    set.remove(rand()   % 1000);
+                    set.contains(rand() % 1000);
+                    set.contains(rand() % 1000);
                 }
             });
         }
@@ -62,14 +58,15 @@ void display_elapsed_time(std::string name, size_t number_of_tests, size_t iters
 
 int main() {
     for (size_t threads_num = 1; threads_num <= std::thread::hardware_concurrency(); ++threads_num) {
-        const size_t number_of_tests = 3;
-        const size_t iters_per_test = 15000;
+        const size_t number_of_tests = 1;
+        const size_t iters_per_test = 55000;
 
         std::cout << threads_num << " threads (ops per thread: " << iters_per_test / threads_num << ")\n";
 
         display_elapsed_time<CoarseGrainedSet<int>>("CoarseGrainedSet", number_of_tests, iters_per_test, threads_num);
         display_elapsed_time<FineGrainedSet<int>>("FineGrainedSet", number_of_tests, iters_per_test, threads_num);
-        display_elapsed_time<OptimisticSet<int>>("OptimisticSet", number_of_tests, iters_per_test, threads_num);
+        display_elapsed_time<OptimisticSet<int>>("OptimisticSetWithMemLeak", number_of_tests, iters_per_test, threads_num);
+        display_elapsed_time<FairOptimisticSet<int>>("FairOptimisticSet", number_of_tests, iters_per_test, threads_num);
 
         std::cout << "===\n";
     }

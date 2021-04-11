@@ -24,51 +24,51 @@ public:
     bool add(T value) {
         std::lock_guard<std::mutex> guard(mtx);
 
-		bool res = false;
+        bool res = false;
 
-		Node<T>* prev = head;
-		Node<T>* curr = prev->next;
-		while(curr->hash < hasher(value)) {
-			prev = curr;
-			curr = curr->next;
-		}
+        Node<T>* prev = head;
+        Node<T>* curr = prev->next;
+        while(curr->hash < hasher(value)) {
+            prev = curr;
+            curr = curr->next;
+        }
 
-		if(curr->hash == hasher(value)) {
-			res = false;
-		} else {
-			Node<T>* node = new Node<T>(value, curr);
-			prev->next = node;
-			res = true;
-		}
+        if(curr->hash == hasher(value)) {
+            res = false;
+        } else {
+            Node<T>* node = new Node<T>(value, curr);
+            prev->next = node;
+            res = true;
+        }
 
-		return res;
+        return res;
     }
 
     bool remove(T value) {
         std::lock_guard<std::mutex> guard(mtx);
 
-		bool res = false;
+        bool res = false;
 
-		Node<T>* prev = head;
-		Node<T>* curr = prev->next;
+        Node<T>* prev = head;
+        Node<T>* curr = prev->next;
 
-		while(curr->hash < hasher(value)) {
-			prev = curr;
-			curr = curr->next;
-		}
+        while(curr->hash < hasher(value)) {
+            prev = curr;
+            curr = curr->next;
+        }
 
-		if(curr->hash == hasher(value)) {
-			prev->next = curr->next;
+        if(curr->hash == hasher(value)) {
+            prev->next = curr->next;
 
             curr->next = nullptr;
-			delete curr;
+            delete curr;
 
-			res = true;
-		} else {
-			res = false;
-		}
+            res = true;
+        } else {
+            res = false;
+        }
 
-		return res;
+        return res;
     }
 
     bool contains(T value) {
@@ -110,69 +110,69 @@ public:
     }
 
     bool add(T value) {
-		bool res = false;
+        bool res = false;
 
-		head->mtx.lock();
+        head->mtx.lock();
 
-		NodeWithMutex<T>* prev = head;
-		NodeWithMutex<T>* curr = prev->next;
+        NodeWithMutex<T>* prev = head;
+        NodeWithMutex<T>* curr = prev->next;
 
-		curr->mtx.lock();
+        curr->mtx.lock();
 
-		while(curr->hash < hasher(value)) {
-			prev->mtx.unlock();
-			prev = curr;
-			curr = curr->next;
-			curr->mtx.lock();
-		}
+        while(curr->hash < hasher(value)) {
+            prev->mtx.unlock();
+            prev = curr;
+            curr = curr->next;
+            curr->mtx.lock();
+        }
 
-		if(curr->hash == hasher(value)) {
-			res = false;
-		} else {
-			NodeWithMutex<T>* node = new NodeWithMutex<T>(value, nullptr);
-			node->next = curr;
-			prev->next = node;
-			res = true;
-		}
+        if(curr->hash == hasher(value)) {
+            res = false;
+        } else {
+            NodeWithMutex<T>* node = new NodeWithMutex<T>(value, nullptr);
+            node->next = curr;
+            prev->next = node;
+            res = true;
+        }
 
-		curr->mtx.unlock();
-		prev->mtx.unlock();
+        curr->mtx.unlock();
+        prev->mtx.unlock();
 
-		return res;
+        return res;
     }
 
     bool remove(T value) {
-		bool res = false;
+        bool res = false;
 
-		NodeWithMutex<T>* prev = nullptr;
-		NodeWithMutex<T>* curr = nullptr;
+        NodeWithMutex<T>* prev = nullptr;
+        NodeWithMutex<T>* curr = nullptr;
 
-		head->mtx.lock();
-		prev = head;
-		curr = prev->next;
-		curr->mtx.lock();
+        head->mtx.lock();
+        prev = head;
+        curr = prev->next;
+        curr->mtx.lock();
 
-		while(curr->hash < hasher(value)) {
-			prev->mtx.unlock();
-			prev = curr;
-			curr = curr->next;
-			curr->mtx.lock();
-		}
+        while(curr->hash < hasher(value)) {
+            prev->mtx.unlock();
+            prev = curr;
+            curr = curr->next;
+            curr->mtx.lock();
+        }
 
-		if(curr->hash == hasher(value)) {
-			prev->next = curr->next;
+        if(curr->hash == hasher(value)) {
+            prev->next = curr->next;
 
-			curr->mtx.unlock();
-			curr->next = nullptr;
+            curr->mtx.unlock();
+            curr->next = nullptr;
             delete curr;
 
-			res = true;
-		} else {
-			curr->mtx.unlock();
-			res = false;
-		}
-		prev->mtx.unlock();
-		return res;
+            res = true;
+        } else {
+            curr->mtx.unlock();
+            res = false;
+        }
+        prev->mtx.unlock();
+        return res;
     }
 
     bool contains(T value) {
@@ -227,113 +227,89 @@ public:
     }
 
     bool add(T value) {
-		bool res = false;
+        while(true) {
+            NodeWithMutex<T>* prev = head;
+            NodeWithMutex<T>* curr = prev->next;
+            while(curr->hash < hasher(value)) {
+                prev = curr;
+                curr = curr->next;
+            }
 
-		while(true) {
-			NodeWithMutex<T>* prev = head;
-			NodeWithMutex<T>* curr = prev->next;
-			while(curr->hash < hasher(value)) {
-				prev = curr;
-				curr = curr->next;
-			}
-			prev->mtx.lock();
-			curr->mtx.lock();
+            std::lock_guard<std::mutex> guard_prev(prev->mtx);
+            std::lock_guard<std::mutex> guard_curr(curr->mtx);
 
-			if(validate(prev, curr)) {
-				if(curr->hash == hasher(value)) {
-					res = false;
-				} else {
-					NodeWithMutex<T>* node = new NodeWithMutex<T>(value, nullptr);
-                    node->next = curr;
-					prev->next = node;
+            if(validate(prev, curr)) {
+                if(curr->hash == hasher(value)) {
+                    return false;
+                }
 
-					res = true;
-				}
+                NodeWithMutex<T>* node = new NodeWithMutex<T>(value, nullptr);
+                node->next = curr;
+                prev->next = node;
 
-				prev->mtx.unlock();
-				curr->mtx.unlock();
-
-				return res;
-			}
-			prev->mtx.unlock();
-			curr->mtx.unlock();
-		}
+                return true;
+            }
+        }
     }
 
     bool remove(T value) {
-		bool res = false;
+        while(true) {
+            NodeWithMutex<T>* prev = head;
+            NodeWithMutex<T>* curr = prev->next;
 
-		while(1) {
-			NodeWithMutex<T>* prev = head;
-			NodeWithMutex<T>* curr = prev->next;
+            while(curr->hash < hasher(value)) {
+                prev = curr;
+                curr = curr->next;
+            }
 
-			while(curr->hash < hasher(value)) {
-				prev = curr;
-				curr = curr->next;
-			}
+            std::lock_guard<std::mutex> guard_prev(prev->mtx);
+            std::lock_guard<std::mutex> guard_curr(curr->mtx);
 
-			prev->mtx.lock();
-			curr->mtx.lock();
+            if(validate(prev, curr)) {
+                if(curr->hash != hasher(value)) {
+                    return false;
+                }
 
-			if(validate(prev, curr)) {
-				if(curr->hash == hasher(value)) {
-					prev->next = curr->next;
-					res = true;
+                prev->next = curr->next;
 
-					curr->mtx.unlock();
-                    curr->next = nullptr;
-                    delete curr;
+                // FIXME: Memory leak now, but crash if uncomment. WTF?
+                //curr->next = nullptr;
+                //delete curr;
 
-				} else {
-					curr->mtx.unlock();
-					res = false;
-				}
-                prev->mtx.unlock();
-
-				return res;
-			}
-
-			prev->mtx.unlock();
-			curr->mtx.unlock();
-		}
+                return true;
+            }
+        }
     }
 
     bool contains(T value) {
-		while(1) {
-			NodeWithMutex<T>* prev = head;
-			NodeWithMutex<T>* curr = prev->next;
+        while(true) {
+            NodeWithMutex<T>* prev = head;
+            NodeWithMutex<T>* curr = prev->next;
 
-			while(curr->hash < hasher(value)) {
-				prev = curr;
-				curr = curr->next;
-			}
+            while(curr->hash < hasher(value)) {
+                prev = curr;
+                curr = curr->next;
+            }
 
-			prev->mtx.lock();
-			curr->mtx.lock();
+            std::lock_guard<std::mutex> guard_prev(prev->mtx);
+            std::lock_guard<std::mutex> guard_curr(curr->mtx);
 
-			if(validate(prev, curr)) {
-				bool res = (curr->hash == hasher(value));
-
-				prev->mtx.unlock();
-				curr->mtx.unlock();
-
-				return res;
-			}
-			prev->mtx.unlock();
-			curr->mtx.unlock();
-		}
+            if(validate(prev, curr)) {
+                return (curr->hash == hasher(value));
+            }
+        }
     }
 
 private:
     bool validate(NodeWithMutex<T>* prev, NodeWithMutex<T>* curr) {
-		NodeWithMutex<T>* node = head;
-		while(node->hash <= prev->hash) {
-			if(node == prev) {
-				return (prev->next == curr);
-			}
-			node = node->next;
-		}
-		return false;
+        NodeWithMutex<T>* node = head;
+        while(node->hash <= prev->hash) {
+            if(node == prev) {
+                return (prev->next == curr);
+            }
+            node = node->next;
+        }
+        return false;
     }
 
 private:

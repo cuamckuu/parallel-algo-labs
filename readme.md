@@ -41,3 +41,33 @@ python3 main.py
 # Лабораторная 2. Разделяемые структуры данных
 
 **Задание на 4. Вариант 2.** Список (множество) на основе блокировок, 3 метода из лекций
+
+```bash
+# Загрузка исходников
+git clone https://github.com/cuamckuu/parallel-algo-labs.git
+cd parallel-algo-labs
+
+# Сборка проекта
+mkdir lab2_build
+cd lab2_build
+cmake ../locks-based-sets
+make
+
+# Запуск
+./LocksBasedSets
+
+# Построение графиков
+./LocksBasedSets > ./../locks-based-sets/plots/data.txt
+cd ./../locks-based-sets/plots
+python3 main.py
+
+# Открыть файл res.png
+```
+
+## Результат эксперимента
+
+![res](./locks-based-sets/plots/res.png)
+
+## Выводы
+
+> TODO

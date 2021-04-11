@@ -32,4 +32,19 @@ if __name__ == '__main__':
     plt.xlabel("Число потоков, шт")
     plt.ylabel("Время выполнения, мс")
     plt.legend()
-    plt.savefig("res.png")
+    plt.savefig("time.png")
+
+    plt.clf()
+    for algo, data in time_elapsed.items():
+        xs, ys = zip(*data)
+
+        y0 = ys[0]
+        ys = [y0/y for y in ys]
+
+        plt.plot(xs, ys, label=algo)
+
+    plt.title("Сравнение TS, TTS, Backoff")
+    plt.xlabel("Число потоков, шт")
+    plt.ylabel("Ускорение в n раз")
+    plt.legend()
+    plt.savefig("speed.png")

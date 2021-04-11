@@ -23,7 +23,7 @@ make
 cd ./../spin-locks-benchmark/plots
 python3 main.py
 
-# Открыть файл res.png
+# Открыть файлы speed.png и time.png
 ```
 
 ## Теоретический результат
@@ -32,7 +32,9 @@ python3 main.py
 
 ## Результат эксперимента
 
-![res](./spin-locks-benchmark/plots/res.png)
+![res](./spin-locks-benchmark/plots/speed.png)
+
+![res](./spin-locks-benchmark/plots/time.png)
 
 ## Выводы
 
@@ -61,12 +63,14 @@ make
 cd ./../locks-based-sets/plots
 python3 main.py
 
-# Открыть файл res.png
+# Открыть файлы speed.png и time.png
 ```
 
 ## Результат эксперимента
 
-![res](./locks-based-sets/plots/res.png)
+![res](./locks-based-sets/plots/speed.png)
+
+![res](./locks-based-sets/plots/time.png)
 
 ## Выводы
 
